@@ -1,7 +1,7 @@
 [versions]
 canvas-api = "1.21.11-R0.1-SNAPSHOT"
-lombok = "1.18.46"
-placeholderapi = "2.12.2"
+lombok = "1.18.48"
+placeholderapi = "2.12.3"
 shadow = "9.6.1"
 run-paper = "3.1.0"
 
