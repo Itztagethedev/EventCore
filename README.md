@@ -15,7 +15,7 @@
 ## Update
 1. Download the new jar from [here](https://github.com/DavidArchive/EventCore/releases/latest)
 2. Replace the old jar with the new one
-3. Delete the old `config.yml` and restart your server
+3. Delete the old config.yml and restart the server
 
 ---
 
@@ -84,7 +84,7 @@ mapManager.drop();
 | `/kit delete <name>`           | Delete a kit                                            |
 | `/revive <player>`             | Revive a player                                         |
 | `/revive *`                    | Revive all players who are not in gamemode 0            |
-| `/announce <message>`          | Announce a message                                      |
+| `/announce <message>`           | Announce a message                                      |
 | `/spawn`                       | Teleport to the spawn                                   |
 
 </details>
@@ -116,5 +116,6 @@ mapManager.drop();
 | `%eventcore_kd%`     | K/D of the player                                 | 2.00    |
 | `%eventcore_totems%` | Totem count of the player                         | 8       |
 | `%eventcore_border%` | Current border size of the world the player is on | 30      |
-| `%eventcore_ping%`   | Ping of the player                                | 18ms    |
-| `%eventcore_tps%`    | Server TPS (via [Spark](https://spark.lucko.me/)) | 20.00   |
+| `%eventcore_ping%`    | Ping of the player                                | 18ms    |
+| `%eventcore_tps%`     | Server TPS (via [Spark](https://spark.lucko.me/)) | 20.00   |
+```
