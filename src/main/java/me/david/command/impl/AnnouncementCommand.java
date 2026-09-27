@@ -19,7 +19,7 @@ public class AnnouncementCommand extends BukkitCommand {
     private final EventCore plugin;
 
     public AnnouncementCommand(EventCore plugin) {
-        super("annoucement", "event.command.annoucement", "announce");
+        super("annoucement", "event.command", "announce");
         this.plugin = plugin;
     }
 
