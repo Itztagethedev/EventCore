@@ -41,7 +41,7 @@ public class MapManager implements me.david.api.manager.MapManager {
 
     public void drop() {
         if (spawnLocation == null || spawnLocation.getWorld() == null) {
-            EventCore.LOGGER.warning("Cannot drop the map because the event spawn location is not configured.");
+            EventCore.LOGGER.warn("Cannot drop the map because the event spawn location is not configured.");
             return;
         }
 
