@@ -76,6 +76,11 @@ public class EventCore extends JavaPlugin {
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(instance, o -> new BorderUtil().run(), 20, 10);
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(instance, o -> new AutoBroadcast().run(), 20, 20 * getConfig().getLong("AutoBroadcast.Interval", 60));
         FoliaScheduler.getGlobalRegionScheduler().runDelayed(instance, o -> {
+            if (mapManager.getSpawnLocation() == null || mapManager.getSpawnLocation().getWorld() == null) {
+                LOGGER.warn("Event spawn location is not configured. Use /event setSpawn before starting the event.");
+                return;
+            }
+
             World world = mapManager.getSpawnLocation().getWorld();
             world.setGameRule(GameRules.SHOW_ADVANCEMENT_MESSAGES, false);
             world.setDifficulty(Difficulty.PEACEFUL);
@@ -88,7 +93,11 @@ public class EventCore extends JavaPlugin {
             FoliaScheduler.getAsyncScheduler().runAtFixedRate(instance, o -> {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     String raw = getConfig().getString("Messages.Actionbar.Message", "&aYou are playing the best Event!");
-                    String parsed = PlaceholderAPI.setPlaceholders(player, raw);
+                    String parsed = raw;
+
+                    if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                        parsed = PlaceholderAPI.setPlaceholders(player, raw);
+                    }
 
                     player.sendActionBar(MessageUtil.translateColorCodes(parsed));
                 }
