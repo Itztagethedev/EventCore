@@ -17,7 +17,9 @@ public class BlockBreakListener implements Listener {
             return;
         }
 
-        event.setCancelled(!(EventCore.getInstance().getGameManager().isRunning()));
+        // The waiting area is protected. Once the event starts, normal
+        // survival block breaking is enabled.
+        event.setCancelled(!EventCore.getInstance().getGameManager().isRunning());
     }
 
 }
