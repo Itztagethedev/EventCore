@@ -21,10 +21,15 @@ public class HostUtil {
 
     public void giveHost(final @NotNull Player player) {
         if (EventCore.getInstance().getConfig().getBoolean("Settings.HostRank.Enabled") && host.isEmpty()) {
-            if (player.hasPermission(Objects.requireNonNull(EventCore.getInstance().getConfig().getString("Settings.HostRank.Permission"),"event.host"))) {
-                String command = Objects.requireNonNull(EventCore.getInstance().getConfig().getString("Settings.HostRank.JoinCommand").replaceAll("%player%", player.getName()), "event.host");
-                FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+            if (!player.hasPermission(Objects.requireNonNull(EventCore.getInstance().getConfig().getString("Settings.HostRank.Permission"), "event.host"))) {
+                return;
             }
+
+            String command = Objects.requireNonNull(EventCore.getInstance().getConfig().getString("Settings.HostRank.JoinCommand"), "event.host")
+                    .replace("%player%", player.getName());
+            if (command.startsWith("/")) command = command.substring(1);
+            final String finalCommand = command;
+            FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
             host.add(player);
         }
     }
