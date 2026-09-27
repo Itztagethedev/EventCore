@@ -11,7 +11,6 @@ import me.david.util.MessageUtil;
 import me.david.util.PlayerUtil;
 import me.david.util.folia.FoliaScheduler;
 import me.david.util.folia.TaskWrapper;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -22,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class GameManager implements me.david.api.manager.GameManager {
+
     private boolean running = false;
     private volatile boolean timerRunning = false;
 
@@ -35,26 +35,16 @@ public class GameManager implements me.david.api.manager.GameManager {
     private boolean autoDropped = false;
 
     public void start() {
-        if (EventCore.getInstance().getMapManager().getSpawnLocation() == null) {
-            Bukkit.getServer().broadcast(MessageUtil.getPrefix().append(
-                    MessageUtil.translateColorCodes("&cThe event cannot start because no spawn location is configured. Use /event setSpawn.")));
-            return;
-        }
-
-        if (timerRunning) {
-            Bukkit.getServer().broadcast(MessageUtil.getPrefix().append(
-                    MessageUtil.translateColorCodes("&cAn event countdown is already running.")));
-            return;
-        }
-
         stopAllTimers();
+        if (timerRunning) return;
+
         running = false;
         autoDropped = false;
         timerRunning = true;
-        timer = new AtomicInteger(Math.max(1,
-                EventCore.getInstance().getConfig().getInt("Messages.StartTimer.Timer", 5)));
 
-        GameStartEvent gameStartEvent = new GameStartEvent(timer.get());
+        timer = new AtomicInteger(EventCore.getInstance().getConfig().getInt("Messages.StartTimer.Timer", 5));
+
+        final GameStartEvent gameStartEvent = new GameStartEvent(timer.get());
         Bukkit.getPluginManager().callEvent(gameStartEvent);
 
         if (gameStartEvent.isCancelled()) {
@@ -62,40 +52,36 @@ public class GameManager implements me.david.api.manager.GameManager {
             return;
         }
 
-        Component countdownStarted = MessageUtil.getPrefix().append(
-                MessageUtil.translateColorCodes("&7Event countdown started."));
-        Bukkit.getServer().broadcast(countdownStarted);
-
-        startTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), task -> {
+        startTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
             if (!timerRunning || running) return;
 
             int current = timer.get();
+
             Bukkit.getPluginManager().callEvent(new GameTimerTickEvent(current));
-
-            String configuredColor = EventCore.getInstance().getConfig()
-                    .getString("Messages.StartTimer.Colors." + current + "sec", "&c");
-
-            Component timerText = MessageUtil.translateColorCodes(configuredColor + current + "&7");
-            Map<String, Component> replacements = Map.of(
-                    "%timer%", timerText,
-                    "%prefix%", MessageUtil.getPrefix()
-            );
 
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (current > 0) {
-                    player.sendMessage(MessageUtil.getPrefix().append(
-                            MessageUtil.format("Messages.StartTimer.Message", replacements)));
+                    String color = EventCore.getInstance().getConfig().getString("Messages.StartTimer.Colors." + current + "sec");
+                    String timerText = color + current + "§7";
 
-                    player.showTitle(Title.title(
-                            MessageUtil.format("Messages.StartTimer.Title", replacements),
-                            MessageUtil.format("Messages.StartTimer.SubTitle", replacements)));
+                    final var replacements = Map.of(
+                            "%timer%", MessageUtil.translateColorCodes(timerText),
+                            "%prefix%", MessageUtil.getPrefix()
+                    );
+
+                    player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.format("Messages.StartTimer.Message", replacements)));
+
+                    Title title = Title.title(MessageUtil.format("Messages.StartTimer.Title", replacements), MessageUtil.format("Messages.StartTimer.SubTitle", replacements));
+                    player.showTitle(title);
+
+                    player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 5, 5);
                 } else {
-                    player.sendMessage(MessageUtil.getPrefix().append(
-                            MessageUtil.get("Messages.Start.Message")));
+                    player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.get("Messages.Start.Message")));
 
-                    player.showTitle(Title.title(
-                            MessageUtil.get("Messages.Start.Title"),
-                            MessageUtil.get("Messages.Start.SubTitle")));
+                    Title title = Title.title(MessageUtil.get("Messages.Start.Title"), MessageUtil.get("Messages.Start.SubTitle"));
+                    player.showTitle(title);
+
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 5);
                 }
             }
 
@@ -104,15 +90,14 @@ public class GameManager implements me.david.api.manager.GameManager {
                     world.setDifficulty(Difficulty.HARD);
                 }
 
-                if (EventCore.getInstance().getConfig().getBoolean("Settings.IngameTimer.Enabled")
-                        && !EventCore.getInstance().getConfig().getBoolean("Messages.Actionbar.Enabled")) {
+                if (EventCore.getInstance().getConfig().getBoolean("Settings.IngameTimer.Enabled") && !EventCore.getInstance().getConfig().getBoolean("Messages.Actionbar.Enabled")) {
                     startInGameTimer();
                 }
 
                 EventCore.getInstance().getConfig().getStringList("Settings.Start.CustomCommands")
                         .forEach(command -> FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(),
-                                () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                                        command.startsWith("/") ? command.substring(1) : command)));
+                                () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(1)))
+                        );
 
                 running = true;
                 timerRunning = false;
@@ -124,10 +109,10 @@ public class GameManager implements me.david.api.manager.GameManager {
             } else {
                 timer.decrementAndGet();
             }
-        }, 1, 20);
+        }, 0, 20);
 
         if (EventCore.getInstance().getConfig().getBoolean("Settings.AutoStop1Player")) {
-            autoStopTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), task -> {
+            autoStopTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
                 if (running && PlayerUtil.getAlive() == 1) {
                     running = false;
                     FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> stop(
@@ -135,19 +120,19 @@ public class GameManager implements me.david.api.manager.GameManager {
                                     .filter(player -> player.getGameMode() == GameMode.SURVIVAL)
                                     .findFirst()
                                     .map(Player::getName)
-                                    .orElse("Unknown")));
+                                    .orElse("Unknown")
+                    ));
                 }
-            }, 20, 20);
+            }, 0, 20);
         }
 
         if (EventCore.getInstance().getConfig().getBoolean("Settings.DropOnPlayerCount.Enabled")) {
-            autoDropTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), task -> {
-                if (running && PlayerUtil.getAlive() <= EventCore.getInstance().getConfig()
-                        .getLong("Settings.DropOnPlayerCount.Count") && !autoDropped) {
+            autoDropTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
+                if (running && PlayerUtil.getAlive() <= EventCore.getInstance().getConfig().getLong("Settings.DropOnPlayerCount.Count") && !autoDropped) {
                     autoDropped = true;
                     EventCore.getInstance().getMapManager().drop();
                 }
-            }, 20, 20);
+            }, 0, 20);
         }
     }
 
@@ -155,26 +140,29 @@ public class GameManager implements me.david.api.manager.GameManager {
         final GameStopEvent gameStopEvent = new GameStopEvent(winner);
         Bukkit.getPluginManager().callEvent(gameStopEvent);
 
-        if (gameStopEvent.isCancelled()) return;
+        if (gameStopEvent.isCancelled()) {
+            return;
+        }
 
         running = false;
         timerRunning = false;
         BorderUtil.lastOptimal = 200;
+
         stopInGameTimer();
         stopAllTimers();
 
-        final String safeWinner = winner == null || winner.isBlank() ? "Unknown" : winner;
-        Map<String, Component> replacements = Map.of(
-                "%winner%", MessageUtil.translateColorCodes(safeWinner),
+        final var replacements = Map.of(
+                "%winner%", MessageUtil.translateColorCodes(winner),
                 "%prefix%", MessageUtil.getPrefix()
         );
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage(MessageUtil.getPrefix().append(
-                    MessageUtil.format("Messages.Stop.Message", replacements)));
-            player.showTitle(Title.title(
-                    MessageUtil.format("Messages.Stop.Title", replacements),
-                    MessageUtil.format("Messages.Stop.SubTitle", replacements)));
+            player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.format("Messages.Stop.Message", replacements)));
+
+            Title title = Title.title(MessageUtil.format("Messages.Stop.Title", replacements), MessageUtil.format("Messages.Stop.SubTitle", replacements));
+            player.showTitle(title);
+
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 5);
             PlayerUtil.cleanPlayer(player);
         }
 
@@ -184,9 +172,9 @@ public class GameManager implements me.david.api.manager.GameManager {
         }
 
         EventCore.getInstance().getConfig().getStringList("Settings.Stop.CustomCommands")
-                .forEach(command -> FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(),
-                        () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                                command.startsWith("/") ? command.substring(1) : command)));
+                .forEach(cmd -> FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(),
+                        () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.substring(1)))
+                );
 
         if (EventCore.getInstance().getConfig().getBoolean("Settings.MapReset.AutoReset")) {
             EventCore.getInstance().getMapManager().reset();
@@ -201,20 +189,20 @@ public class GameManager implements me.david.api.manager.GameManager {
             timerTask = null;
         }
 
-        timerTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), task -> {
+        timerTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
             inGameTimer++;
+
             Bukkit.getPluginManager().callEvent(new InGameTimerTickEvent(inGameTimer));
 
-            String raw = Objects.requireNonNull(EventCore.getInstance().getConfig()
-                    .getString("Settings.IngameTimer.Format"))
-                    .replace("hh", String.format("%02d", inGameTimer / 3600))
-                    .replace("mm", String.format("%02d", (inGameTimer % 3600) / 60))
-                    .replace("ss", String.format("%02d", inGameTimer % 60));
+            String raw = Objects.requireNonNull(EventCore.getInstance().getConfig().getString("Settings.IngameTimer.Format"))
+                    .replace("hh", String.format("%02d", (inGameTimer / 3600)))
+                    .replace("mm", String.format("%02d", ((inGameTimer % 3600) / 60)))
+                    .replace("ss", String.format("%02d", (inGameTimer % 60)));
 
-            for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
                 player.sendActionBar(MessageUtil.translateColorCodes(raw));
             }
-        }, 1, 20);
+        }, 0, 20);
     }
 
     public void stopInGameTimer() {
@@ -227,6 +215,7 @@ public class GameManager implements me.david.api.manager.GameManager {
 
     private void stopAllTimers() {
         timerRunning = false;
+
         if (startTask != null) { startTask.cancel(); startTask = null; }
         if (autoStopTask != null) { autoStopTask.cancel(); autoStopTask = null; }
         if (autoDropTask != null) { autoDropTask.cancel(); autoDropTask = null; }
