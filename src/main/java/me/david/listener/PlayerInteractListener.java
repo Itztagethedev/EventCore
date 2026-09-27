@@ -17,7 +17,9 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        event.setCancelled(!(EventCore.getInstance().getGameManager().isRunning()));
+        // Players can use doors, chests, buttons, levers, crafting tables,
+        // beds and other normal interactions once the event has started.
+        event.setCancelled(!EventCore.getInstance().getGameManager().isRunning());
     }
 
 }
