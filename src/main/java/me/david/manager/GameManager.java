@@ -42,7 +42,7 @@ public class GameManager implements me.david.api.manager.GameManager {
         autoDropped = false;
         timerRunning = true;
 
-        timer = new AtomicInteger(EventCore.getInstance().getConfig().getInt("Messages.StartTimer.Timer", 5));
+        timer = new AtomicInteger(Math.max(1, EventCore.getInstance().getConfig().getInt("Messages.StartTimer.Timer", 5)));
 
         final GameStartEvent gameStartEvent = new GameStartEvent(timer.get());
         Bukkit.getPluginManager().callEvent(gameStartEvent);
@@ -51,6 +51,8 @@ public class GameManager implements me.david.api.manager.GameManager {
             timerRunning = false;
             return;
         }
+
+        Bukkit.broadcast(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("&7Event countdown started.")));
 
         startTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
             if (!timerRunning || running) return;
