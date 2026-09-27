@@ -18,7 +18,6 @@ public abstract class BukkitCommand extends Command {
     public BukkitCommand(String name, String permission, String... aliases) {
         super(name, name + " command", "/" + name, aliases[0].isEmpty() ? Collections.singletonList(name) : Stream.concat(Stream.of(name), Arrays.stream(aliases)).toList());
         this.permission = permission;
-        registerCommand(this);
     }
 
     public BukkitCommand(String name, String permission) {
@@ -46,8 +45,4 @@ public abstract class BukkitCommand extends Command {
         return onTabComplete(sender, alias, args);
     }
 
-
-    private void registerCommand(Command command) {
-        Bukkit.getCommandMap().register("eventcore", command);
-    }
 }
