@@ -41,17 +41,11 @@ public class EventCore extends JavaPlugin {
         kitManager = new KitManager();
         EventCoreAPI.initialize(instance, gameManager, kitManager, mapManager);
 
-        AnnouncementCommand announcementCommand = new AnnouncementCommand(instance);
-        EventCommand eventCommand = new EventCommand(instance);
-        KitCommand kitCommand = new KitCommand(instance);
-        ReviveCommand reviveCommand = new ReviveCommand();
-        SpawnCommand spawnCommand = new SpawnCommand(instance);
-
-        registerCommand("announce", announcementCommand);
-        registerCommand("event", eventCommand);
-        registerCommand("kit", kitCommand);
-        registerCommand("revive", reviveCommand);
-        registerCommand("spawn", spawnCommand);
+        new AnnouncementCommand(instance);
+        new EventCommand(instance);
+        new KitCommand(instance);
+        new ReviveCommand();
+        new SpawnCommand(instance);
 
         Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), instance);
         Bukkit.getPluginManager().registerEvents(new BlockExplodeListener(), instance);
@@ -82,11 +76,6 @@ public class EventCore extends JavaPlugin {
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(instance, o -> new BorderUtil().run(), 20, 10);
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(instance, o -> new AutoBroadcast().run(), 20, 20 * getConfig().getLong("AutoBroadcast.Interval", 60));
         FoliaScheduler.getGlobalRegionScheduler().runDelayed(instance, o -> {
-            if (mapManager.getSpawnLocation() == null || mapManager.getSpawnLocation().getWorld() == null) {
-                LOGGER.warn("Event spawn location is not configured. Use /event setSpawn before starting the event.");
-                return;
-            }
-
             World world = mapManager.getSpawnLocation().getWorld();
             world.setGameRule(GameRules.SHOW_ADVANCEMENT_MESSAGES, false);
             world.setDifficulty(Difficulty.PEACEFUL);
@@ -99,11 +88,7 @@ public class EventCore extends JavaPlugin {
             FoliaScheduler.getAsyncScheduler().runAtFixedRate(instance, o -> {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     String raw = getConfig().getString("Messages.Actionbar.Message", "&aYou are playing the best Event!");
-                    String parsed = raw;
-
-                    if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-                        parsed = PlaceholderAPI.setPlaceholders(player, raw);
-                    }
+                    String parsed = PlaceholderAPI.setPlaceholders(player, raw);
 
                     player.sendActionBar(MessageUtil.translateColorCodes(parsed));
                 }
@@ -113,22 +98,6 @@ public class EventCore extends JavaPlugin {
         if (getConfig().getBoolean("Settings.Metrics")) {
             new Metrics(instance, 28277);
         }
-    }
-
-    private void registerCommand(String name, me.david.command.BukkitCommand command) {
-        org.bukkit.command.PluginCommand pluginCommand = getCommand(name);
-        if (pluginCommand == null) {
-            LOGGER.warn("Command /{} is missing from plugin.yml", name);
-            return;
-        }
-
-        pluginCommand.setExecutor((sender, registeredCommand, label, args) -> {
-            command.execute(sender, label, args);
-            return true;
-        });
-
-        pluginCommand.setTabCompleter((sender, registeredCommand, alias, args) ->
-                command.tabComplete(sender, alias, args));
     }
 
     @Override
