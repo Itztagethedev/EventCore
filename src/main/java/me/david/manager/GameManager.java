@@ -40,13 +40,13 @@ public class GameManager implements me.david.api.manager.GameManager {
             return;
         }
 
-        stopAllTimers();
         if (timerRunning) {
             Bukkit.getServer().broadcast(MessageUtil.getPrefix().append(
                     MessageUtil.translateColorCodes("&cAn event countdown is already running.")));
             return;
         }
 
+        stopAllTimers();
         running = false;
         autoDropped = false;
         timerRunning = true;
