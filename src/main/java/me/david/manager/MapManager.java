@@ -40,6 +40,11 @@ public class MapManager implements me.david.api.manager.MapManager {
     }
 
     public void drop() {
+        if (spawnLocation == null || spawnLocation.getWorld() == null) {
+            EventCore.LOGGER.warning("Cannot drop the map because the event spawn location is not configured.");
+            return;
+        }
+
         long borderExtra = EventCore.getInstance().getConfig().getLong("Settings.Drop.BorderExtra", 3);
         double borderSize = spawnLocation.getWorld().getWorldBorder().getSize();
 
@@ -59,7 +64,7 @@ public class MapManager implements me.david.api.manager.MapManager {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "/pos2 " + edgeMax.getBlockX() + ",350," + edgeMax.getBlockZ());
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "/set 0");
             EventCore.getInstance().getConfig().getStringList("Settings.Drop.CustomCommands").forEach(command ->
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(1)));
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.startsWith("/") ? command.substring(1) : command));
         });
     }
 
