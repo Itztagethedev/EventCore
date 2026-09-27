@@ -41,11 +41,17 @@ public class EventCore extends JavaPlugin {
         kitManager = new KitManager();
         EventCoreAPI.initialize(instance, gameManager, kitManager, mapManager);
 
-        new AnnouncementCommand(instance);
-        new EventCommand(instance);
-        new KitCommand(instance);
-        new ReviveCommand();
-        new SpawnCommand(instance);
+        AnnouncementCommand announcementCommand = new AnnouncementCommand(instance);
+        EventCommand eventCommand = new EventCommand(instance);
+        KitCommand kitCommand = new KitCommand(instance);
+        ReviveCommand reviveCommand = new ReviveCommand();
+        SpawnCommand spawnCommand = new SpawnCommand(instance);
+
+        registerCommand("announce", announcementCommand);
+        registerCommand("event", eventCommand);
+        registerCommand("kit", kitCommand);
+        registerCommand("revive", reviveCommand);
+        registerCommand("spawn", spawnCommand);
 
         Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), instance);
         Bukkit.getPluginManager().registerEvents(new BlockExplodeListener(), instance);
@@ -107,6 +113,22 @@ public class EventCore extends JavaPlugin {
         if (getConfig().getBoolean("Settings.Metrics")) {
             new Metrics(instance, 28277);
         }
+    }
+
+    private void registerCommand(String name, me.david.command.BukkitCommand command) {
+        org.bukkit.command.PluginCommand pluginCommand = getCommand(name);
+        if (pluginCommand == null) {
+            LOGGER.warn("Command /{} is missing from plugin.yml", name);
+            return;
+        }
+
+        pluginCommand.setExecutor((sender, registeredCommand, label, args) -> {
+            command.execute(sender, label, args);
+            return true;
+        });
+
+        pluginCommand.setTabCompleter((sender, registeredCommand, alias, args) ->
+                command.tabComplete(sender, alias, args));
     }
 
     @Override
