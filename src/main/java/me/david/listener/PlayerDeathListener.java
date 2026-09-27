@@ -18,6 +18,10 @@ public class PlayerDeathListener implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         final Player player = event.getEntity();
 
+        if (!EventCore.getInstance().getGameManager().isRunning()) {
+            return;
+        }
+
         if (player.getGameMode() == GameMode.SPECTATOR) {
             event.deathMessage(Component.empty());
             return;
