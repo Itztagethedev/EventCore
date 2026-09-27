@@ -35,8 +35,8 @@ public class GameManager implements me.david.api.manager.GameManager {
     private boolean autoDropped = false;
 
     public void start() {
-        stopAllTimers();
         if (timerRunning) return;
+        stopAllTimers();
 
         running = false;
         autoDropped = false;
@@ -96,7 +96,7 @@ public class GameManager implements me.david.api.manager.GameManager {
 
                 EventCore.getInstance().getConfig().getStringList("Settings.Start.CustomCommands")
                         .forEach(command -> FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(),
-                                () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(1)))
+                                () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.startsWith("/") ? command.substring(1) : command))
                         );
 
                 running = true;
