@@ -24,7 +24,7 @@ public class PlayerQuitListener implements Listener {
 
         List<String> quitCommands = EventCore.getInstance().getConfig().getStringList("Settings.PlayerQuit.Commands");
         for (String command : quitCommands) {
-            final String finalCommand = command.replace("%player%", player.getName()).substring(1);
+            final String finalCommand = command.replace("%player%", player.getName()).startsWith("/") ? command.replace("%player%", player.getName()).substring(1) : command.replace("%player%", player.getName());
             FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
         }
 
