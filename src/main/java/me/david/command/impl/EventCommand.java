@@ -38,7 +38,6 @@ public class EventCommand extends BukkitCommand {
             player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("§7Running §aEventCore §7v" + plugin.getPluginMeta().getVersion() + " §7on §a" + getSoftware())));
             player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("§7Download at §ahttps://github.com/VertrauterDavid")));
             player.sendMessage(" ");
-            return;
         }
 
         if (args.length == 1) {
