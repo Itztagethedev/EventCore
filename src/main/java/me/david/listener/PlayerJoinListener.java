@@ -43,7 +43,9 @@ public class PlayerJoinListener implements Listener {
             player.setGameMode(GameMode.SPECTATOR);
         }
         FoliaScheduler.getEntityScheduler().runDelayed(player, EventCore.getInstance(), o -> {
-            player.teleportAsync(EventCore.getInstance().getMapManager().getSpawnLocation());
+            if (EventCore.getInstance().getMapManager().getSpawnLocation() != null) {
+                player.teleportAsync(EventCore.getInstance().getMapManager().getSpawnLocation());
+            }
             if (EventCore.getInstance().getGameManager().isRunning()) {
                 player.setGameMode(GameMode.SPECTATOR);
             }
