@@ -11,7 +11,7 @@ import me.david.util.MessageUtil;
 import me.david.util.PlayerUtil;
 import me.david.util.folia.FoliaScheduler;
 import me.david.util.folia.TaskWrapper;
-import net.kyori.adventure.title.Title;
+import net.kyori.adventure.title.Title;\nimport net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -60,7 +60,7 @@ public class GameManager implements me.david.api.manager.GameManager {
             return;
         }
 
-        Bukkit.broadcast(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("&7Event countdown started.")));
+        Bukkit.broadcastMessage(LegacyComponentSerializer.legacySection().serialize(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("&7Event countdown started."))));
 
         startTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
             if (!timerRunning || running) return;
