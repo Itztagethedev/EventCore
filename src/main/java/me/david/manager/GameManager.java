@@ -14,6 +14,7 @@ import me.david.util.folia.TaskWrapper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
+import org.bukkit.entity.Player;
 
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +75,7 @@ public class GameManager implements me.david.api.manager.GameManager {
             String configuredColor = EventCore.getInstance().getConfig()
                     .getString("Messages.StartTimer.Colors." + current + "sec", "&c");
 
-            String timerText = MessageUtil.translateColorCodes(configuredColor + current + "&7");
+            Component timerText = MessageUtil.translateColorCodes(configuredColor + current + "&7");
             Map<String, Component> replacements = Map.of(
                     "%timer%", timerText,
                     "%prefix%", MessageUtil.getPrefix()
