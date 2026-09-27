@@ -11,7 +11,8 @@ import me.david.util.MessageUtil;
 import me.david.util.PlayerUtil;
 import me.david.util.folia.FoliaScheduler;
 import me.david.util.folia.TaskWrapper;
-import net.kyori.adventure.title.Title;\nimport net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.title.Title;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
