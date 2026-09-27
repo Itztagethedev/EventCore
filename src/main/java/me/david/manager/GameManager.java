@@ -35,8 +35,16 @@ public class GameManager implements me.david.api.manager.GameManager {
     private boolean autoDropped = false;
 
     public void start() {
+        if (EventCore.getInstance().getMapManager().getSpawnLocation() == null) {
+            Bukkit.broadcast(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("&cThe event cannot start because no spawn location is configured. Use /event setSpawn.")));
+            return;
+        }
+
         stopAllTimers();
-        if (timerRunning) return;
+        if (timerRunning) {
+            Bukkit.broadcast(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("&cAn event countdown is already running.")));
+            return;
+        }
 
         running = false;
         autoDropped = false;
@@ -98,7 +106,7 @@ public class GameManager implements me.david.api.manager.GameManager {
 
                 EventCore.getInstance().getConfig().getStringList("Settings.Start.CustomCommands")
                         .forEach(command -> FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(),
-                                () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(1)))
+                                () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.startsWith("/") ? command.substring(1) : command))
                         );
 
                 running = true;
@@ -153,8 +161,9 @@ public class GameManager implements me.david.api.manager.GameManager {
         stopInGameTimer();
         stopAllTimers();
 
+        final String safeWinner = winner == null || winner.isBlank() ? "Unknown" : winner;
         final var replacements = Map.of(
-                "%winner%", MessageUtil.translateColorCodes(winner),
+                "%winner%", MessageUtil.translateColorCodes(safeWinner),
                 "%prefix%", MessageUtil.getPrefix()
         );
 
@@ -175,7 +184,7 @@ public class GameManager implements me.david.api.manager.GameManager {
 
         EventCore.getInstance().getConfig().getStringList("Settings.Stop.CustomCommands")
                 .forEach(cmd -> FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(),
-                        () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.substring(1)))
+                        () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.startsWith("/") ? cmd.substring(1) : cmd))
                 );
 
         if (EventCore.getInstance().getConfig().getBoolean("Settings.MapReset.AutoReset")) {
