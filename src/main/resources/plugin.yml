@@ -8,15 +8,3 @@ website: https://github.com/DavidArchive/EventCore
 canvas-supported: true
 softdepend: [PlaceholderAPI]
 depend: [WorldEdit]
-commands:
-  event:
-    description: EventCore event management
-    aliases: [e]
-  announce:
-    description: Broadcast an announcement
-  kit:
-    description: EventCore kit management
-  revive:
-    description: Revive a player
-  spawn:
-    description: Teleport to the event spawn
