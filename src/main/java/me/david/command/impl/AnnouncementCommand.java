@@ -32,39 +32,22 @@ public class AnnouncementCommand extends BukkitCommand {
 
         String message = String.join(" ", args);
 
-        String configuredFormat = plugin.getConfig().getString(
-                "Messages.AnnoucementCommand.MessageFormat",
-                "%prefix% %message%"
-        );
+        // Display announcement with new color code and format
+        String announcementTitle = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
+        Component announcement = announcementTitle;
 
-        String prefix = plugin.getConfig().getString("Messages.Prefix", "");
-        String formatted = configuredFormat
-                .replace("%prefix%", prefix)
-                .replace("%message%", message);
-
-        Component announcement = MessageUtil.translateColorCodes(formatted);
-
+        // Send title screen announcement to all online players
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage(announcement);
+            // Show title on title screen
+            Component titleComponent = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
+            Component subtitleComponent = MessageUtil.translateColorCodes(message);
+            Title titlePacket = Title.title(titleComponent, subtitleComponent);
+            player.showTitle(titlePacket);
         }
 
-        if (plugin.getConfig().getBoolean("Messages.AnnoucementCommand.Title.Enabled", true)) {
-            String titleText = plugin.getConfig().getString(
-                    "Messages.AnnoucementCommand.Title.Title", "");
-            String subtitleText = plugin.getConfig().getString(
-                    "Messages.AnnoucementCommand.Title.SubTitle", "");
-
-            titleText = titleText.replace("%prefix%", prefix).replace("%message%", message);
-            subtitleText = subtitleText.replace("%prefix%", prefix).replace("%message%", message);
-
-            Component title = MessageUtil.translateColorCodes(titleText);
-            Component subtitle = MessageUtil.translateColorCodes(subtitleText);
-            Title titlePacket = Title.title(title, subtitle);
-
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.showTitle(titlePacket);
-            }
-        }
+        // Also send chat message to console
+        sender.sendMessage(MessageUtil.getPrefix().append(
+                MessageUtil.translateColorCodes("&#88C0EC&l&o✓ Announcement sent to all players")));
     }
 
     @Override
