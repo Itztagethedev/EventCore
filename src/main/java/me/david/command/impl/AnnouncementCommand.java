@@ -18,7 +18,7 @@ public class AnnouncementCommand extends BukkitCommand {
     private final EventCore plugin;
 
     public AnnouncementCommand(EventCore plugin) {
-        super("announce", "event.command");
+        super("announce", "event.command", "announcement");
         this.plugin = plugin;
     }
 
@@ -32,11 +32,7 @@ public class AnnouncementCommand extends BukkitCommand {
 
         String message = String.join(" ", args);
 
-        // Display announcement with new color code and format
-        String announcementTitle = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
-        Component announcement = announcementTitle;
-
-        // Send title screen announcement to all online players
+        // Display announcement with color code on title screen
         for (Player player : Bukkit.getOnlinePlayers()) {
             // Show title on title screen
             Component titleComponent = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
