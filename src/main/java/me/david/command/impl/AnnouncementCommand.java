@@ -12,9 +12,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class AnnouncementCommand extends BukkitCommand {
+
     private final EventCore plugin;
 
     public AnnouncementCommand(EventCore plugin) {
@@ -31,19 +31,36 @@ public class AnnouncementCommand extends BukkitCommand {
         }
 
         String message = String.join(" ", args);
-        Map<String, Component> replacements = Map.of(
-                "%prefix%", MessageUtil.getPrefix(),
-                "%message%", MessageUtil.translateColorCodes(message)
+
+        String configuredFormat = plugin.getConfig().getString(
+                "Messages.AnnoucementCommand.MessageFormat",
+                "%prefix% %message%"
         );
 
-        Component chat = MessageUtil.format("Messages.AnnoucementCommand.MessageFormat", replacements);
-        Bukkit.getServer().broadcast(chat);
+        String prefix = plugin.getConfig().getString("Messages.Prefix", "");
+        String formatted = configuredFormat
+                .replace("%prefix%", prefix)
+                .replace("%message%", message);
+
+        Component announcement = MessageUtil.translateColorCodes(formatted);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.sendMessage(announcement);
+        }
 
         if (plugin.getConfig().getBoolean("Messages.AnnoucementCommand.Title.Enabled", true)) {
-            Component title = MessageUtil.format("Messages.AnnoucementCommand.Title.Title", replacements);
-            Component subtitle = MessageUtil.format("Messages.AnnoucementCommand.Title.SubTitle", replacements);
+            String titleText = plugin.getConfig().getString(
+                    "Messages.AnnoucementCommand.Title.Title", "");
+            String subtitleText = plugin.getConfig().getString(
+                    "Messages.AnnoucementCommand.Title.SubTitle", "");
 
+            titleText = titleText.replace("%prefix%", prefix).replace("%message%", message);
+            subtitleText = subtitleText.replace("%prefix%", prefix).replace("%message%", message);
+
+            Component title = MessageUtil.translateColorCodes(titleText);
+            Component subtitle = MessageUtil.translateColorCodes(subtitleText);
             Title titlePacket = Title.title(title, subtitle);
+
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.showTitle(titlePacket);
             }
@@ -51,7 +68,11 @@ public class AnnouncementCommand extends BukkitCommand {
     }
 
     @Override
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, String[] args) {
+    public @NotNull List<String> tabComplete(
+            @NotNull CommandSender sender,
+            @NotNull String alias,
+            String[] args
+    ) {
         return new ArrayList<>();
     }
 }
