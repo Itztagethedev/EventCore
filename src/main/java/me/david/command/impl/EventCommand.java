@@ -75,7 +75,8 @@ public class EventCommand extends BukkitCommand {
                 plugin.reloadConfig();
                 double reloadMS = System.currentTimeMillis() - currentMS;
 
-                player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("§aYou successfully reloaded the config within %ms%ms!").replaceText(b -> b.matchLiteral("%ms%").toString(), String.valueOf(reloadMS))));
+                String message = "§aYou successfully reloaded the config within " + reloadMS + "ms!";
+                player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes(message)));
                 return;
             }
 
