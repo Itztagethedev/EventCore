@@ -8,3 +8,10 @@ website: https://github.com/DavidArchive/EventCore
 canvas-supported: true
 softdepend: [PlaceholderAPI]
 depend: [WorldEdit]
+permissions:
+  eventcore.break:
+    description: Allows breaking blocks even outside the event runtime
+    default: op
+  event.bypass:
+    description: Legacy bypass permission for block breaking
+    default: op
