@@ -72,25 +72,27 @@ public class GameManager implements me.david.api.manager.GameManager {
 
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (current > 0) {
-                    String color = EventCore.getInstance().getConfig().getString("Messages.StartTimer.Colors." + current + "sec");
-                    String timerText = color + current + "§7";
+                    Component countdownTitle = MessageUtil.translateColorCodes("&#88C0EC&lEVENT STARTING");
+                    Component countdownNumber = MessageUtil.translateColorCodes("&#88C0EC&l" + current);
+                    Title titlePacket = Title.title(countdownTitle, countdownNumber);
+                    player.showTitle(titlePacket);
 
-                    final var replacements = Map.of(
-                            "%timer%", MessageUtil.translateColorCodes(timerText),
-                            "%prefix%", MessageUtil.getPrefix()
+                    Component chatMessage = MessageUtil.getPrefix().append(
+                            MessageUtil.translateColorCodes("&#88C0EC&lEvent starting in: &b" + current + " &lseconds")
                     );
-
-                    player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.format("Messages.StartTimer.Message", replacements)));
-
-                    Title title = Title.title(MessageUtil.format("Messages.StartTimer.Title", replacements), MessageUtil.format("Messages.StartTimer.SubTitle", replacements));
-                    player.showTitle(title);
+                    player.sendMessage(chatMessage);
 
                     player.playSound(player.getLocation(), Sound.ENTITY_CHICKEN_EGG, 5, 5);
                 } else {
-                    player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.get("Messages.Start.Message")));
+                    Component startTitle = MessageUtil.translateColorCodes("&#88C0EC&lGO GO GO!");
+                    Component startSubtitle = MessageUtil.translateColorCodes("&bEvent has started!");
+                    Title startPacket = Title.title(startTitle, startSubtitle);
+                    player.showTitle(startPacket);
 
-                    Title title = Title.title(MessageUtil.get("Messages.Start.Title"), MessageUtil.get("Messages.Start.SubTitle"));
-                    player.showTitle(title);
+                    Component startMessage = MessageUtil.getPrefix().append(
+                            MessageUtil.translateColorCodes("&#88C0EC&lEvent started! Fight to survive!")
+                    );
+                    player.sendMessage(startMessage);
 
                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 5);
                 }
@@ -166,22 +168,20 @@ public class GameManager implements me.david.api.manager.GameManager {
         stopInGameTimer();
         stopAllTimers();
 
-        final var replacements = Map.of(
-                "%winner%", MessageUtil.translateColorCodes(winnerName),
-                "%prefix%", MessageUtil.getPrefix()
-        );
-
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.format("Messages.Stop.Message", replacements)));
+            Component winnerTitle = MessageUtil.translateColorCodes("&#FFE300&lWINNER");
+            Component winnerSubtitle = MessageUtil.translateColorCodes("&fthe winner is\n&#FFE300" + winnerName);
+            Title winnerPacket = Title.title(winnerTitle, winnerSubtitle);
+            player.showTitle(winnerPacket);
 
-            Title title = Title.title(MessageUtil.format("Messages.Stop.Title", replacements), MessageUtil.format("Messages.Stop.SubTitle", replacements));
-            player.showTitle(title);
+            Component winnerMessage = MessageUtil.getPrefix().append(
+                    MessageUtil.translateColorCodes("&#FFE300&lWINNER - &fthe winner is &#FFE300" + winnerName)
+            );
+            player.sendMessage(winnerMessage);
 
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 5);
             PlayerUtil.cleanPlayer(player);
         }
-
-        showScreenAnnouncement("Winner: " + winnerName);
 
         for (World world : Bukkit.getWorlds()) {
             world.setDifficulty(Difficulty.PEACEFUL);
