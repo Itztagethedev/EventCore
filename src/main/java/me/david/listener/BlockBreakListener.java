@@ -12,13 +12,11 @@ public class BlockBreakListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         final Player player = event.getPlayer();
 
-        if (player.hasPermission("event.bypass")) {
+        if (player.hasPermission("eventcore.break") || player.hasPermission("event.bypass") || player.isOp()) {
             event.setCancelled(false);
             return;
         }
 
-        // The waiting area is protected. Once the event starts, normal
-        // survival block breaking is enabled.
         event.setCancelled(!EventCore.getInstance().getGameManager().isRunning());
     }
 
