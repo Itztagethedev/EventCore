@@ -6,6 +6,7 @@ import me.david.util.BorderUtil;
 import me.david.util.MessageUtil;
 import me.david.util.folia.FoliaScheduler;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
@@ -27,6 +28,14 @@ public class EventCommand extends BukkitCommand {
 
     private String getSoftware() {
         return FoliaScheduler.isFolia() ? "Folia" : "PaperMC";
+    }
+
+    private void sendScreenAnnouncement(String subtitleText) {
+        Component title = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
+        Component subtitle = MessageUtil.translateColorCodes(subtitleText);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.showTitle(Title.title(title, subtitle));
+        }
     }
 
     @Override
@@ -66,7 +75,7 @@ public class EventCommand extends BukkitCommand {
                 plugin.reloadConfig();
                 double reloadMS = System.currentTimeMillis() - currentMS;
 
-                player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("§aYou successfully reloaded the config within %ms%ms!").replaceText(b -> b.matchLiteral("%ms%").replacement(Component.text(String.valueOf(reloadMS))))));
+                player.sendMessage(MessageUtil.getPrefix().append(MessageUtil.translateColorCodes("§aYou successfully reloaded the config within %ms%ms!").replaceText(b -> b.matchLiteral("%ms%").toString(), String.valueOf(reloadMS))));
                 return;
             }
 
@@ -181,5 +190,4 @@ public class EventCommand extends BukkitCommand {
 
         return list.stream().filter(content -> content.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).sorted().toList();
     }
-
 }

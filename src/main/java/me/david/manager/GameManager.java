@@ -11,6 +11,7 @@ import me.david.util.MessageUtil;
 import me.david.util.PlayerUtil;
 import me.david.util.folia.FoliaScheduler;
 import me.david.util.folia.TaskWrapper;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -33,6 +34,16 @@ public class GameManager implements me.david.api.manager.GameManager {
     private AtomicInteger timer;
     private long inGameTimer;
     private boolean autoDropped = false;
+
+    private void showScreenAnnouncement(String subtitle) {
+        Component title = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
+        Component sub = MessageUtil.translateColorCodes(subtitle);
+        Title packet = Title.title(title, sub);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.showTitle(packet);
+        }
+    }
 
     public void start() {
         if (timerRunning) return;
@@ -86,6 +97,8 @@ public class GameManager implements me.david.api.manager.GameManager {
             }
 
             if (current <= 0) {
+                showScreenAnnouncement("Event Started! Fight to survive!");
+
                 for (World world : Bukkit.getWorlds()) {
                     world.setDifficulty(Difficulty.HARD);
                 }
@@ -115,13 +128,13 @@ public class GameManager implements me.david.api.manager.GameManager {
             autoStopTask = FoliaScheduler.getGlobalRegionScheduler().runAtFixedRate(EventCore.getInstance(), o -> {
                 if (running && PlayerUtil.getAlive() == 1) {
                     running = false;
-                    FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> stop(
-                            Bukkit.getOnlinePlayers().stream()
-                                    .filter(player -> player.getGameMode() == GameMode.SURVIVAL)
-                                    .findFirst()
-                                    .map(Player::getName)
-                                    .orElse("Unknown")
-                    ));
+                    String winner = Bukkit.getOnlinePlayers().stream()
+                            .filter(player -> player.getGameMode() == GameMode.SURVIVAL)
+                            .findFirst()
+                            .map(Player::getName)
+                            .orElse("Unknown");
+
+                    FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> stop(winner));
                 }
             }, 0, 20);
         }
@@ -137,7 +150,9 @@ public class GameManager implements me.david.api.manager.GameManager {
     }
 
     public void stop(final String winner) {
-        final GameStopEvent gameStopEvent = new GameStopEvent(winner);
+        final String winnerName = winner == null || winner.trim().isEmpty() ? "Unknown" : winner.trim();
+
+        final GameStopEvent gameStopEvent = new GameStopEvent(winnerName);
         Bukkit.getPluginManager().callEvent(gameStopEvent);
 
         if (gameStopEvent.isCancelled()) {
@@ -152,7 +167,7 @@ public class GameManager implements me.david.api.manager.GameManager {
         stopAllTimers();
 
         final var replacements = Map.of(
-                "%winner%", MessageUtil.translateColorCodes(winner),
+                "%winner%", MessageUtil.translateColorCodes(winnerName),
                 "%prefix%", MessageUtil.getPrefix()
         );
 
@@ -165,6 +180,8 @@ public class GameManager implements me.david.api.manager.GameManager {
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 5, 5);
             PlayerUtil.cleanPlayer(player);
         }
+
+        showScreenAnnouncement("Winner: " + winnerName);
 
         for (World world : Bukkit.getWorlds()) {
             world.setDifficulty(Difficulty.PEACEFUL);

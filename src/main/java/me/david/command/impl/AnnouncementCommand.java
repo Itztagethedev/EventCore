@@ -32,18 +32,14 @@ public class AnnouncementCommand extends BukkitCommand {
 
         String message = String.join(" ", args);
 
-        // Display announcement with color code on title screen
         for (Player player : Bukkit.getOnlinePlayers()) {
-            // Show title on title screen
-            Component titleComponent = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
-            Component subtitleComponent = MessageUtil.translateColorCodes(message);
-            Title titlePacket = Title.title(titleComponent, subtitleComponent);
-            player.showTitle(titlePacket);
+            Component title = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
+            Component subtitle = MessageUtil.translateColorCodes(message);
+            player.showTitle(Title.title(title, subtitle));
         }
 
-        // Also send chat message to console
         sender.sendMessage(MessageUtil.getPrefix().append(
-                MessageUtil.translateColorCodes("&#88C0EC&l&o✓ Announcement sent to all players")));
+                MessageUtil.translateColorCodes("&#88C0EC&l✓ Announcement sent to all players")));
     }
 
     @Override
