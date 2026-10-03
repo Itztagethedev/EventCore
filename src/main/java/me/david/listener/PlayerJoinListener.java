@@ -29,8 +29,18 @@ public class PlayerJoinListener implements Listener {
             FoliaScheduler.getGlobalRegionScheduler().execute(EventCore.getInstance(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
         }
 
-        if (EventCore.getInstance().getConfig().getBoolean("Messages.PlayerJoin.Enabled")) {
-            Component message = MessageUtil.getPrefix().append(MessageUtil.format("Messages.PlayerJoin.Message", Map.of("%player%", Component.text(player.getName()))));
+        if (EventCore.getInstance().getConfig().getBoolean("Messages.PlayerJoin.Enabled", true)) {
+            String configuredMessage = EventCore.getInstance().getConfig().getString(
+                    "Messages.PlayerJoin.Message",
+                    "&a%player% &7joined the Event!"
+            );
+
+            configuredMessage = configuredMessage.replace("%player%", player.getName());
+
+            Component message = MessageUtil.getPrefix().append(
+                    MessageUtil.translateColorCodes(configuredMessage)
+            );
+
             event.joinMessage(message);
         } else {
             event.joinMessage(Component.empty());
