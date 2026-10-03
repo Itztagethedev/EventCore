@@ -32,14 +32,45 @@ public class AnnouncementCommand extends BukkitCommand {
 
         String message = String.join(" ", args);
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            Component title = MessageUtil.translateColorCodes("&#88C0EC&lANNOUNCEMENT");
-            Component subtitle = MessageUtil.translateColorCodes(message);
-            player.showTitle(Title.title(title, subtitle));
-        }
+        String messageFormat = plugin.getConfig().getString(
+                "Messages.AnnoucementCommand.MessageFormat",
+                "%prefix% %message%"
+        );
+        String titleText = plugin.getConfig().getString(
+                "Messages.AnnoucementCommand.Title.Title",
+                ""
+        );
+        String subtitleText = plugin.getConfig().getString(
+                "Messages.AnnoucementCommand.Title.SubTitle",
+                ""
+        );
 
-        sender.sendMessage(MessageUtil.getPrefix().append(
-                MessageUtil.translateColorCodes("&#88C0EC&l✓ Announcement sent to all players")));
+        String prefix = plugin.getConfig().getString("Messages.Prefix", "");
+
+        String formattedMessage = messageFormat
+                .replace("%prefix%", prefix)
+                .replace("%message%", message);
+
+        String formattedTitle = titleText
+                .replace("%prefix%", prefix)
+                .replace("%message%", message);
+
+        String formattedSubtitle = subtitleText
+                .replace("%prefix%", prefix)
+                .replace("%message%", message);
+
+        Component announcementMessage = MessageUtil.translateColorCodes(formattedMessage);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.sendMessage(announcementMessage);
+
+            if (plugin.getConfig().getBoolean(
+                    "Messages.AnnoucementCommand.Title.Enabled", true)) {
+                Component title = MessageUtil.translateColorCodes(formattedTitle);
+                Component subtitle = MessageUtil.translateColorCodes(formattedSubtitle);
+                player.showTitle(Title.title(title, subtitle));
+            }
+        }
     }
 
     @Override
